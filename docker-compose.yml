@@ -1,0 +1,33 @@
+version: "3.9"
+services:
+  server:
+    build: ./server
+    image: server-image
+    # Build-only: produces server-image for the load balancer to spawn
+    # replicas from. Don't start this with `docker compose up`.
+
+  loadbalancer:
+    build: ./loadbalancer
+    image: loadbalancer-image
+    container_name: loadbalancer
+    ports:
+      - "5000:5000"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    privileged: true
+    environment:
+      N: "3"
+      NUM_SLOTS: "512"
+      NUM_VIRTUAL_SERVERS: "9"
+      DOCKER_NETWORK: "net1"
+      SERVER_IMAGE: "server-image"
+      HEARTBEAT_INTERVAL: "3"
+    networks:
+      net1:
+        aliases:
+          - loadbalancer
+
+networks:
+  net1:
+    name: net1
+    driver: bridge
