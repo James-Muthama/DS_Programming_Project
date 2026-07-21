@@ -1,4 +1,4 @@
-<img width="577" height="361" alt="image" src="https://github.com/user-attachments/assets/4c82665c-fc7c-4003-bda1-0865d8c921a0" /># Customizable Load Balancer — ICS 4104 Assignment 1
+# Customizable Load Balancer — ICS 4104 Assignment 1
 
 ## 1. Architecture
 
