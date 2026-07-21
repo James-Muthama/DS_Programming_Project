@@ -1,4 +1,4 @@
-# Customizable Load Balancer — ICS 4104 Assignment 1
+<img width="577" height="361" alt="image" src="https://github.com/user-attachments/assets/4c82665c-fc7c-4003-bda1-0865d8c921a0" /># Customizable Load Balancer — ICS 4104 Assignment 1
 
 ## 1. Architecture
 
@@ -84,6 +84,9 @@ All scripts live in `analysis/` and assume the stack is already running
   exactly what Task A-4 asks you to investigate by trying alternative hash
   functions with better spread modulo `M`.
 
+  <img width="577" height="361" alt="image" src="https://github.com/user-attachments/assets/a7a27013-1e40-4bf1-8c2d-a79b73217095" />
+
+
 - **A-2** — `python analysis/a2_scalability.py`
   Scales `N` from 2 to 6 (via `/add`/`/rm`), firing 10,000 requests at each
   step, and plots average load per server (`a2_scalability.png`).
@@ -92,6 +95,9 @@ All scripts live in `analysis/` and assume the stack is already running
   more replicas are added, demonstrating horizontal scalability without
   needing to remap the entire hash space (the core benefit of consistent
   hashing vs. naive `hash(id) % N`).
+
+  <img width="578" height="362" alt="image" src="https://github.com/user-attachments/assets/5bee1497-7a98-47f2-a218-09dfaf241e9d" />
+
 
 - **A-3** — `python analysis/a3_endpoint_and_failure_test.py`
   Exercises `/rep`, `/add`, `/rm`, `/home`, and an invalid path, then kills
@@ -110,8 +116,7 @@ All scripts live in `analysis/` and assume the stack is already running
   standard deviation of per-server load, illustrating why hash quality
   matters for load balancing.
 
-> Fill in this section with your actual observed numbers/screenshots after
-> running the experiments against your deployed stack.
+
 
 ## 6. Repository layout
 
