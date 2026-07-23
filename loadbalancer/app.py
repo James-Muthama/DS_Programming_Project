@@ -3,6 +3,7 @@ import random
 import string
 import threading
 import time
+import logging
 
 import docker
 import requests
@@ -11,6 +12,8 @@ from flask import Flask, jsonify, request
 from consistent_hash import ConsistentHashMap
 
 app = Flask(__name__)
+logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s")
+logger = logging.getLogger(__name__)
 
 # --------------------------------------------------------------------- #
 # Configuration (Task 2 defaults)
@@ -25,6 +28,15 @@ HEARTBEAT_INTERVAL = float(os.environ.get("HEARTBEAT_INTERVAL", 3))
 docker_client = docker.from_env()
 hash_map = ConsistentHashMap(num_slots=NUM_SLOTS, num_virtual_servers=NUM_VIRTUAL_SERVERS)
 lock = threading.RLock()
+
+
+def _error_response(message: str, status_code: int = 400):
+    return jsonify({"message": message, "status": "failure"}), status_code
+
+
+def _parse_payload():
+    payload = request.get_json(force=True, silent=True) or {}
+    return payload.get("n"), payload.get("hostnames", [])
 
 
 def random_hostname():
@@ -60,7 +72,7 @@ def replace_failed_server(old_hostname: str):
         remove_server(old_hostname)
         new_hostname = random_hostname()
         spawn_server(new_hostname)
-        print(f"[heartbeat] {old_hostname} failed -> replaced with {new_hostname}", flush=True)
+        logger.info("[heartbeat] %s failed -> replaced with %s", old_hostname, new_hostname)
 
 
 def heartbeat_loop():
@@ -98,19 +110,13 @@ def rep():
 
 @app.route("/add", methods=["POST"])
 def add():
-    payload = request.get_json(force=True, silent=True) or {}
-    n = payload.get("n")
-    hostnames = payload.get("hostnames", [])
+    n, hostnames = _parse_payload()
 
     if n is None or not isinstance(n, int) or n <= 0:
-        return jsonify({"message": "<Error> 'n' must be a positive integer",
-                         "status": "failure"}), 400
+        return _error_response("<Error> 'n' must be a positive integer")
 
     if len(hostnames) > n:
-        return jsonify({
-            "message": "<Error> Length of hostname list is more than newly added instances",
-            "status": "failure"
-        }), 400
+        return _error_response("<Error> Length of hostname list is more than newly added instances")
 
     with lock:
         new_hostnames = list(hostnames)
@@ -132,19 +138,13 @@ def add():
 
 @app.route("/rm", methods=["DELETE"])
 def rm():
-    payload = request.get_json(force=True, silent=True) or {}
-    n = payload.get("n")
-    hostnames = payload.get("hostnames", [])
+    n, hostnames = _parse_payload()
 
     if n is None or not isinstance(n, int) or n <= 0:
-        return jsonify({"message": "<Error> 'n' must be a positive integer",
-                         "status": "failure"}), 400
+        return _error_response("<Error> 'n' must be a positive integer")
 
     if len(hostnames) > n:
-        return jsonify({
-            "message": "<Error> Length of hostname list is more than removable instances",
-            "status": "failure"
-        }), 400
+        return _error_response("<Error> Length of hostname list is more than removable instances")
 
     with lock:
         current = hash_map.servers()
